@@ -1,0 +1,31 @@
+1.新建空的maven 项目,导入pom 相关内容.
+2.采用 spring initiallizr 创建一个 eureka server 服务,选择cloud discovery->eureka server
+3.eureka server 在启动类上配置@EnableEurekaServer  用于标明启动为注册中心
+4.新建application.yml 内容写入到 配置信息
+server:
+  port: 8761
+
+eureka:
+  instance:
+    hostname: localhost
+  client:
+    registerWithEureka: false   禁止向服务中心注册自己本身.
+    fetchRegistry: false  是否检索服务
+    serviceUrl:
+      defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/   指定服务中心位置
+5.新建 eureka-client ,选择 选择cloud discovery->eureka server 与web服务
+6.添加注解
+@EnableEurekaClient   //告知我是服务中心实际的服务提供者
+@RestController    @Controller 与@ResponseBody的组合
+7.在client端新建application.yml
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/   //服务中心地址
+server:
+  port: 8762   //提供服务的端口号
+spring:
+  application:
+    name: eureka-client   //注册服务的名称,eurka 均是通过server name 注册的服务
+
+8.启动Eureka Server端,启动Eureka Client, 输入localhost:8761 访问即可

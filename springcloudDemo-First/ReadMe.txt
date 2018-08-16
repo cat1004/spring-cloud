@@ -1,2 +1,31 @@
-主要配置:
-服务的注册与发现
+eureka 服务的注册与发现
+
+什么是eureka:
+Netflix Eureka
+服务中心，云端服务发现，一个基于 REST 的服务，用于定位服务，以实现云端中间层服务发现和故障转移。
+服务中心会将所有的服务生成列表推荐给客户机,客户机需要什么,从服务中心直接获取具体的地址然后直接与其建立连接,进行通信.
+
+服务中心高可用从何而来?
+考虑到发生故障的情况，服务注册中心发生故障必将会造成整个系统的瘫痪，因此需要保证服务注册中心的高可用。
+Eureka Server在设计的时候就考虑了高可用设计，在Eureka服务治理设计中，所有节点既是服务的提供方，也是服务的消费方，服务注册中心也不例外。
+Eureka Server的高可用实际上就是将自己做为服务向其他服务注册中心注册自己，这样就可以形成一组互相注册的服务注册中心，以实现服务清单的互相同步，达到高可用的效果。
+
+怎么保障服务的可靠性与稳定性?
+服务中心每60秒就会执行一次剔除操作,将当前清单中超时（默认为90秒）没有续约的服务剔除出去。
+服务注册完成后服务中心内部提供心跳机制,client端一般为90秒就进行一次连接尝试,保障对外提供服务的可用性.如果超出这个时间就会启动剔除功能不对外显示.
+我们将其成为服务续约,主要的属性:
+eureka.instance.lease-expiration-duration-in-seconds,
+leaseExpirationDurationInSeconds，表示eureka server至上一次收到client的心跳之后，等待下一次心跳的超时时间，
+在这个时间内若没收到下一次心跳，则将移除该instance。
+
+eureka.instance.lease-renewal-interval-in-seconds
+leaseRenewalIntervalInSeconds，表示eureka client发送心跳给server端的频率。
+如果在leaseExpirationDurationInSeconds后，server端没有收到client的心跳，则将摘除该instance。
+除此之外，如果该instance实现了HealthCheckCallback，并决定让自己unavailable的话，则该instance也不会接收到流量。
+默认30秒
+
+服务如何同步,不同服务中心提供的服务如何访问?
+服务中心之间会两两连接,从而形成集群,在保障服务的辅助中心稳定性的前提之下,通过向集群中其他相连的注册中心转发，
+从而实现服务注册中心之间的服务同步又将其他服务中心所拥有的服务列表向外传递,从而实现访问.
+
+
